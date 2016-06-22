@@ -1,6 +1,8 @@
 import glob
+import numpy as np
 import os
 import rasterio as rio
+from sklearn import decomposition
 
 # create path to the location of the Landsat GeoTiff files
 raster_path = os.path.join(os.sep,
@@ -25,4 +27,14 @@ for raster in raster_list:
         array = src.read()
         band_list.append(array)
 
-print band_list
+pixels = np.dstack([c.ravel() for c in band_list])[0]
+
+pca = decomposition.PCA(n_components=6, whiten=False)
+pca.fit(pixels)
+
+for band in range(len(pca.components_)):
+    print(
+    'Band %s explains %s of variance. Weights:'
+    % (band+1, pca.explained_variance_ratio_[band])
+    )
+    print(np.around(pca.components_[band], decimals=2))
