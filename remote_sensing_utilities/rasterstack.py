@@ -19,6 +19,10 @@ for name in glob.glob(raster_path + "/*B[2-7].TIF"):
 # sort the list
 raster_list = sorted(raster_list)
 
+# iterate over all raster files in the raster_list, read the GTiff as an
+# array, and append them to the bands list object
+# Additionally, all properties from the raster files are stored in variables
+# these properties are needed for the creation of a new GTiff
 bands = []
 for b in raster_list:
     with rio.open(b) as src:
@@ -33,9 +37,12 @@ for b in raster_list:
 
         bands.append(array)
 
+# define the output GTiff file
 ras_out = os.path.join(raster_path,
                        "stack.tif")
 
+# create the new GTiff raster, where all array objects will be stored as
+# separated raster bands
 with rio.open(ras_out,
               'w',
               width=width,
@@ -43,9 +50,12 @@ with rio.open(ras_out,
               driver="GTiff",
               crs=crs,
               affine=affine,
-              count=(len(raster_list)+1),
+              count=(len(bands)+1),   # the count indicates the number
+              # of raster bands in this GTiff file. This number is not
+              # 0-indexed and therefor the length of the bands list must be
+              # altered by +1
               dtype=dtype
               ) as dst:
-
+    # iterate over the bands list and write them as band to the GTiff file
     for i, b in enumerate(bands):
         dst.write(b, i+1)
