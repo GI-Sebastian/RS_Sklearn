@@ -24,17 +24,6 @@ raster_list = sorted(raster_list)
 band_list = []
 for raster in raster_list:
     with rio.open(raster) as src:
-        array = src.read()
+        array = src.read(1)
         band_list.append(array)
 
-pixels = np.dstack([c.ravel() for c in band_list])[0]
-
-pca = decomposition.PCA(n_components=6, whiten=False)
-pca.fit(pixels)
-
-for band in range(len(pca.components_)):
-    print(
-    'Band %s explains %s of variance. Weights:'
-    % (band+1, pca.explained_variance_ratio_[band])
-    )
-    print(np.around(pca.components_[band], decimals=2))
