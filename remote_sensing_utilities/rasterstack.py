@@ -59,3 +59,4 @@ with rio.open(ras_out,
     # iterate over the bands list and write them as band to the GTiff file
     for i, b in enumerate(bands):
         dst.write(b, i+1)
+        
