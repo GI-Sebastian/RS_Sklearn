@@ -7,6 +7,7 @@ import sys
 from time import time
 
 
+# NOTE: maybe I should create a class for raster IO used in these scripts
 def extract_arrayasdict(raster_root_path, stack_name):
 
     raster_stack = os.path.join(raster_root_path, stack_name)
@@ -20,7 +21,10 @@ def extract_arrayasdict(raster_root_path, stack_name):
 
     return dictionary, profile
 
-
+# NOTE: these function I would highly recommend to create an index class
+#  with all functions as a methods
+# also it should be a subclass of numpy:
+# (http://docs.scipy.org/doc/numpy-1.10.1/user/basics.subclassing.html)
 def calculate_NDVI(b_dict):
 
     red = b_dict["red"]
