@@ -8,7 +8,7 @@ from time import time
 
 
 # NOTE: maybe I should create a class for raster IO used in these scripts
-def extract_arrayasdict(raster_root_path, stack_name):
+def extractArrayAsDict(raster_root_path, stack_name):
 
     raster_stack = os.path.join(raster_root_path, stack_name)
 
@@ -17,66 +17,48 @@ def extract_arrayasdict(raster_root_path, stack_name):
         bands = [i for i in src.read()]
 
     keys = ["blue", "green", "red", "NIR", "SWIR1", "SWIR2"]
-    dictionary = dict(zip(keys, bands))
+    band_dictionary = dict(zip(keys, bands))
 
-    return dictionary, profile
+    return band_dictionary, profile
 
-# NOTE: these function I would highly recommend to create an index class
-#  with all functions as a methods
-# also it should be a subclass of numpy:
-# (http://docs.scipy.org/doc/numpy-1.10.1/user/basics.subclassing.html)
-def calculate_NDVI(b_dict):
 
-    red = b_dict["red"]
-    nir = b_dict["NIR"]
+def saveIndexAsGtiff(array, out_path,  profile):
 
-    red = red.astype(float)
-    nir = nir.astype(float)
-    print(red.dtype)
-
-    numerator = (red - nir)
-    denominator = (red + nir)
-
-    mask = np.equal(denominator, 0)
-
-    denominator[mask] = -99
-
-    ndvi = numerator / denominator
-
-    ndvi[mask] = -99
-
-    index_name = "NDVI"
-
-    return ndvi, index_name
-
-def calculate_NDWI():
-    pass
-
-def calculate_TCB():
-    pass
-
-def calculate_NDSII():
-    pass
-
-def calculate_LWM():
-    pass
-
-def calculate_SAVI():
-    pass
-
-def save_index_as_GTiff(array, out_path, index_name, profile):
-
-    raster_out = os.path.join(out_path, index_name + ".tif")
-
-    profile.update(dtype=rio.float64, count=1, nodata=-99)
-
-    with rio.open(raster_out,
+    with rio.open(out_path,
                   'w',
                   **profile
                   ) as dst:
         dst.write(array, 1)
 
-    print(raster_out)
+
+class RasterBand(object):
+
+    no_data = -9999
+
+    def __init__(self, dictionary):
+        self.dictionary = dictionary
+        self.blue = self.dictionary["blue"]
+        self.green = self.dictionary["green"]
+        self.red = self.dictionary["red"]
+        self.nir = self.dictionary["NIR"]
+        self.swir1 = self.dictionary["SWIR1"]
+        self.swir2 = self.dictionary["SWIR2"]
+
+    def calculateNDVI(self):
+        numerator = (self.red + self.nir)
+        denominator = (self.red - self.nir)
+
+        mask = np.equal(denominator, 0)
+        denominator[mask] = self.no_data
+
+        ndvi = numerator / denominator
+
+        ndvi[mask] = self.no_data
+
+        return ndvi
+
+    def ndwi(self):
+        pass
 
 if __name__ == "__main__":
 
@@ -91,13 +73,18 @@ if __name__ == "__main__":
     stack_name = "stack.tif"
 
     t0 = time()
-    dictionary, profile = extract_arrayasdict(raster_path, stack_name)
-    print(profile)
+    dictionary, profile = extractArrayAsDict(raster_path, stack_name)
 
-    array, index_name = calculate_NDVI(dictionary)
-    print(array)
-    save_index_as_GTiff(array, raster_path, index_name, profile)
+    rb = RasterBand(dictionary)
+    ndvi = rb.calculateNDVI()
 
+    profile.update(dtype=rio.float64, count=1, nodata=rb.no_data)
+
+    ras_out = os.path.join(raster_path, "NDVI.tif")
+
+    saveIndexAsGtiff(array=ndvi,
+                     out_path=ras_out,
+                     profile=profile)
 
 
     print("The main function took %.2f seconds." % (time() - t0))
