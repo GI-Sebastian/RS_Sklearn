@@ -32,13 +32,15 @@ def calculate_NDVI(b_dict):
 
     numerator = (red - nir)
     denominator = (red + nir)
+
     mask = np.equal(denominator, 0)
-    # print(denominator)
+
     denominator[mask] = -99
-    # print(denominator)
 
     ndvi = numerator / denominator
-    # print(ndvi.dtype)
+
+    ndvi[mask] = -99
+
     index_name = "NDVI"
 
     return ndvi, index_name
@@ -62,7 +64,7 @@ def save_index_as_GTiff(array, out_path, index_name, profile):
 
     raster_out = os.path.join(out_path, index_name + ".tif")
 
-    profile.update(dtype=rio.float64, count=1)
+    profile.update(dtype=rio.float64, count=1, nodata=-99)
 
     with rio.open(raster_out,
                   'w',
@@ -86,9 +88,10 @@ if __name__ == "__main__":
 
     t0 = time()
     dictionary, profile = extract_arrayasdict(raster_path, stack_name)
+    print(profile)
 
     array, index_name = calculate_NDVI(dictionary)
-
+    print(array)
     save_index_as_GTiff(array, raster_path, index_name, profile)
 
 

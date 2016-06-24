@@ -53,7 +53,8 @@ def main(raster_root_path):
                   # of raster bands in this GTiff file. This number is not
                   # 0-indexed and therefor the length of the bands list must be
                   # altered by +1
-                  dtype=dtype
+                  dtype=dtype,
+                  nodata=0
                   ) as dst:
         # iterate over the bands list and write them as band to the GTiff file
         for i, b in enumerate(bands):
