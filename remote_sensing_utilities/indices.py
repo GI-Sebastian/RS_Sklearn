@@ -37,16 +37,20 @@ class RasterBand(object):
 
     def __init__(self, dictionary):
         self.dictionary = dictionary
-        self.blue = self.dictionary["blue"]
-        self.green = self.dictionary["green"]
-        self.red = self.dictionary["red"]
-        self.nir = self.dictionary["NIR"]
-        self.swir1 = self.dictionary["SWIR1"]
-        self.swir2 = self.dictionary["SWIR2"]
+        self.blue = self.dictionary["blue"].astype(dtype=np.int16)
+        self.green = self.dictionary["green"].astype(dtype=np.int16)
+        self.red = self.dictionary["red"].astype(dtype=np.int16)
+        self.nir = self.dictionary["NIR"].astype(dtype=np.int16)
+        self.swir1 = self.dictionary["SWIR1"].astype(dtype=np.int16)
+        self.swir2 = self.dictionary["SWIR2"].astype(dtype=np.int16)
+        self.shape = self.red.shape
 
     def calculateNDVI(self):
-        numerator = (self.red + self.nir)
-        denominator = (self.red - self.nir)
+
+        # numerator = np.zeros(shape=self.shape, dtype=np.int16)
+        numerator = (self.nir - self.red)
+        # denominator = np.zeros(shape=self.shape, dtype=np.int16)
+        denominator = (self.nir + self.red)
 
         mask = np.equal(denominator, 0)
         denominator[mask] = self.no_data
@@ -57,7 +61,8 @@ class RasterBand(object):
 
         return ndvi
 
-    def ndwi(self):
+    def calculateNDWI(self):
+        numerator = (self.green)
         pass
 
 if __name__ == "__main__":
@@ -76,15 +81,23 @@ if __name__ == "__main__":
     dictionary, profile = extractArrayAsDict(raster_path, stack_name)
 
     rb = RasterBand(dictionary)
-    ndvi = rb.calculateNDVI()
+    ndvi, numerator, denominator = rb.calculateNDVI()
 
     profile.update(dtype=rio.float64, count=1, nodata=rb.no_data)
+    # profile.update(dtype=rio.int16, count=1, nodata=0)
 
     ras_out = os.path.join(raster_path, "NDVI.tif")
 
     saveIndexAsGtiff(array=ndvi,
                      out_path=ras_out,
                      profile=profile)
-
-
+    profile.update(dtype=rio.int16, count=1, nodata=0)
+    ras_out = os.path.join(raster_path, "denominator.tif")
+    saveIndexAsGtiff(array=denominator,
+                     out_path=ras_out,
+                     profile=profile)
+    ras_out = os.path.join(raster_path, "numerator.tif")
+    saveIndexAsGtiff(array=numerator,
+                 out_path=ras_out,
+                 profile=profile)
     print("The main function took %.2f seconds." % (time() - t0))
