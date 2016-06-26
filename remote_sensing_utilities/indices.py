@@ -47,9 +47,7 @@ class RasterBand(object):
 
     def calculateNDVI(self):
 
-        # numerator = np.zeros(shape=self.shape, dtype=np.int16)
         numerator = (self.nir - self.red)
-        # denominator = np.zeros(shape=self.shape, dtype=np.int16)
         denominator = (self.nir + self.red)
 
         mask = np.equal(denominator, 0)
@@ -62,8 +60,18 @@ class RasterBand(object):
         return ndvi
 
     def calculateNDWI(self):
-        numerator = (self.green)
-        pass
+
+        numerator = (self.nir - self.swir1)
+        denominator = (self.nir + self.swir1)
+
+        mask = np.equal(denominator, 0)
+        denominator[mask] = self.no_data
+
+        ndwi = numerator / denominator
+
+        ndwi[mask] = self.no_data
+
+        return ndwi
 
 if __name__ == "__main__":
 

@@ -55,7 +55,7 @@ class Test(unittest.TestCase):
         keys = ["blue", "green", "red", "NIR", "SWIR1", "SWIR2"]
         bands = []
         for key in keys:
-            if key == "red":
+            if key == "SWIR1":
                 band = np.array([[1, 2], [3, 4]])
             elif key == "NIR":
                 band = np.array([[4, 3], [2, 1]])
