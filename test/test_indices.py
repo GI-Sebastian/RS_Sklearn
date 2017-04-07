@@ -2,7 +2,7 @@ import numpy as np
 import numpy.testing as npt
 import unittest
 
-from remote_sensing_utilities import indices
+from utils import indices
 
 
 class Test(unittest.TestCase):

@@ -89,23 +89,10 @@ if __name__ == "__main__":
     dictionary, profile = extractArrayAsDict(raster_path, stack_name)
 
     rb = RasterBand(dictionary)
-    ndvi, numerator, denominator = rb.calculateNDVI()
+    ndvi = rb.calculateNDVI()
 
     profile.update(dtype=rio.float64, count=1, nodata=rb.no_data)
-    # profile.update(dtype=rio.int16, count=1, nodata=0)
 
     ras_out = os.path.join(raster_path, "NDVI.tif")
 
-    saveIndexAsGtiff(array=ndvi,
-                     out_path=ras_out,
-                     profile=profile)
-    profile.update(dtype=rio.int16, count=1, nodata=0)
-    ras_out = os.path.join(raster_path, "denominator.tif")
-    saveIndexAsGtiff(array=denominator,
-                     out_path=ras_out,
-                     profile=profile)
-    ras_out = os.path.join(raster_path, "numerator.tif")
-    saveIndexAsGtiff(array=numerator,
-                 out_path=ras_out,
-                 profile=profile)
     print("The main function took %.2f seconds." % (time() - t0))
